@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 3.0.0)
+project(qt-log VERSION 0.1.0)
+
+find_package(Qt5 REQUIRED COMPONENTS Core)
+
+add_executable(qt-log main.cpp log_handler.cpp)
+
+target_link_libraries(qt-log Qt5::Core)
