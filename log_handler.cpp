@@ -1,18 +1,22 @@
+#include <QCoreApplication>
+
 #include "log_handler.h"
+#include "log_handler_p.h"
 
 /************************************************************************************************************
  *                                                                                                          *
  *                                               LogHandlerPrivate                                          *
  *                                                                                                          *
  ***********************************************************************************************************/
+
 // 初始化 static 变量
 QMutex LogHandlerPrivate::logMutex;
 QFile* LogHandlerPrivate::logFile = nullptr;
 QTextStream* LogHandlerPrivate::logOut = nullptr;
 
-LogHandlerPrivate::LogHandlerPrivate() {
-    logDir.setPath("log"); // TODO: 日志文件夹的路径，为 exe 所在目录下的 log 文件夹，可从配置文件读取
-    QString logPath = logDir.absoluteFilePath("today.log"); // 获取日志的路径
+LogHandlerPrivate::LogHandlerPrivate(LogHandler *parent) : q_ptr(parent) {
+    logDir.setPath(QString("/deepin/linglong/log/") + QCoreApplication::applicationName()); // 日志建议放到/var/log下，可从配置文件读取
+    QString logPath = logDir.absoluteFilePath(QCoreApplication::applicationName() + ".log"); // 获取日志的路径
 
     // ========获取日志文件创建的时间========
     // QFileInfo::created(): On most Unix systems, this function returns the time of the last status change.
@@ -70,7 +74,7 @@ void LogHandlerPrivate::openAndBackupLogFile() {
     if (!logDir.exists()) {
         logDir.mkpath("."); // 可以递归的创建文件夹
     }
-    QString logPath = logDir.absoluteFilePath("today.log"); // log.txt的路径
+    QString logPath = logDir.absoluteFilePath(QCoreApplication::applicationName() + ".log"); // log.txt的路径
 
     // [[1]] 程序每次启动时 logFile 为 nullptr
     if (logFile == nullptr) {
@@ -107,7 +111,7 @@ void LogHandlerPrivate::openAndBackupLogFile() {
 
 // 检测当前日志文件大小
 void LogHandlerPrivate::checkLogFiles() {
-    // 如果 protocal.log 文件大小超过5M，重新创建一个日志文件，原文件存档为yyyy-MM-dd_hhmmss.log
+    // 如果 protocal.log 文件大小超过10M，重新创建一个日志文件，原文件存档为yyyy-MM-dd_hhmmss.log
     if (logFile->size() > 1024*g_logLimitSize) {
         logFile->flush();
         logFile->close();
@@ -195,7 +199,7 @@ void LogHandlerPrivate::messageHandler(QtMsgType type, const QMessageLogContext 
     fileName = fileName.mid(index + 1);
 
     (*LogHandlerPrivate::logOut) << QString("%1 - [%2] (%3:%4, %5): %6\n")
-                                    .arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss")).arg(level)
+                                    .arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss.zzz")).arg(level)
                                     .arg(fileName).arg(context.line).arg(context.function).arg(msg);
 }
 
@@ -204,17 +208,15 @@ void LogHandlerPrivate::messageHandler(QtMsgType type, const QMessageLogContext 
  *                                               LogHandler                                                 *
  *                                                                                                          *
  ***********************************************************************************************************/
-LogHandler::LogHandler() : d(nullptr) {
+LogHandler::LogHandler(QObject *parent) : d_ptr(new LogHandlerPrivate(this))
+{
 }
 
 // 给Qt安装消息处理函数
 void LogHandler::installMessageHandler() {
     QMutexLocker locker(&LogHandlerPrivate::logMutex); // 类似C++11的lock_guard，析构时自动解锁
-
-    if (nullptr == d) {
-        d = new LogHandlerPrivate();
-        qInstallMessageHandler(LogHandlerPrivate::messageHandler); // 给 Qt 安装自定义消息处理函数
-    }
+    
+    qInstallMessageHandler(LogHandlerPrivate::messageHandler); // 给 Qt 安装自定义消息处理函数
 }
 
 // 取消安装消息处理函数并释放资源
@@ -222,6 +224,6 @@ void LogHandler::uninstallMessageHandler() {
     QMutexLocker locker(&LogHandlerPrivate::logMutex);
 
     qInstallMessageHandler(nullptr);
+    Q_D(LogHandler);
     delete d;
-    d = nullptr;
 }
