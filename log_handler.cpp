@@ -61,7 +61,6 @@ LogHandlerPrivate::~LogHandlerPrivate() {
     }
 }
 
-// 打开日志文件 log.txt，如果不是当天创建的，则使用创建日期把其重命名为 yyyy-MM-dd.log，并重新创建一个 log.txt
 void LogHandlerPrivate::openAndBackupLogFile() {
     // 总体逻辑:
     // 1. 程序启动时 logFile 为 nullptr，初始化 logFile，有可能是同一天打开已经存在的 logFile，所以使用 Append 模式
@@ -110,7 +109,6 @@ void LogHandlerPrivate::openAndBackupLogFile() {
     }
 }
 
-// 检测当前日志文件大小
 void LogHandlerPrivate::checkLogFiles() {
     // 如果 protocal.log 文件大小超过10M，重新创建一个日志文件，原文件存档为yyyy-MM-dd_hhmmss.log
     if (logFile->size() > 1024*1024*g_logLimitSize) {
@@ -133,7 +131,6 @@ void LogHandlerPrivate::checkLogFiles() {
     }
 }
 
-// 自动删除30天前的日志
 void LogHandlerPrivate::autoDeleteLog()
 {
     QDateTime now = QDateTime::currentDateTime();
@@ -157,7 +154,6 @@ void LogHandlerPrivate::autoDeleteLog()
     }
 }
 
-// 消息处理函数
 void LogHandlerPrivate::messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg) {
     QMutexLocker locker(&LogHandlerPrivate::logMutex);
     QString level;
@@ -182,7 +178,6 @@ void LogHandlerPrivate::messageHandler(QtMsgType type, const QMessageLogContext 
         break;
     }
 
-    // 输出到标准输出: Windows 下 std::cout 使用 GB2312，而 msg 使用 UTF-8，但是程序的 Local 也还是使用 UTF-8
 #if defined(Q_OS_WIN)
     QByteArray localMsg = QTextCodec::codecForName("GB2312")->fromUnicode(msg); //msg.toLocal8Bit();
 #else
@@ -210,6 +205,7 @@ void LogHandlerPrivate::messageHandler(QtMsgType type, const QMessageLogContext 
  *                                               LogHandler                                                 *
  *                                                                                                          *
  ***********************************************************************************************************/
+
 LogHandler::LogHandler(QObject *parent) : d_ptr(new LogHandlerPrivate(this))
 {
 }
@@ -219,14 +215,12 @@ LogHandler::~LogHandler()
     uninstallMessageHandler();
 }
 
-// 给Qt安装消息处理函数
 void LogHandler::installMessageHandler() {
     QMutexLocker locker(&LogHandlerPrivate::logMutex); // 类似C++11的lock_guard，析构时自动解锁
     
     qInstallMessageHandler(LogHandlerPrivate::messageHandler); // 给 Qt 安装自定义消息处理函数
 }
 
-// 取消安装消息处理函数并释放资源
 void LogHandler::uninstallMessageHandler() {
     QMutexLocker locker(&LogHandlerPrivate::logMutex);
 

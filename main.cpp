@@ -5,6 +5,14 @@
 #include "log_handler.h"
 #include "test.h"
 
+/**
+ * @brief main函数
+ * 
+ * @param argc 参数个数
+ * @param argv 参数列表
+ * @return int the exit code of the application
+ *
+ */
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);

@@ -1,6 +1,12 @@
 
 #pragma once
 
+/**
+ * @brief Singleton class
+ *
+ * @tparam T Type of the singleton
+ *
+ */
 template<typename T>
 class Singleton
 {
