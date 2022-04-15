@@ -96,7 +96,8 @@ void LogHandlerPrivate::openAndBackupLogFile() {
         delete logOut;
         delete logFile;
 
-        QString newLogPath = logDir.absoluteFilePath(logFileCreatedDate.toString("yyyy-MM-dd.log"));;
+        QString newLogPath = logDir.absoluteFilePath(QCoreApplication::applicationName() + "_"
+                                                     + logFileCreatedDate.toString("yyyy-MM-dd.log"));;
         QFile::copy(logPath, newLogPath); // Bug: 按理说 rename 会更合适，但是 rename 时最后一个文件总是显示不出来，需要 killall Finder 后才出现
         QFile::remove(logPath); // 删除重新创建，改变创建时间
 
@@ -118,8 +119,9 @@ void LogHandlerPrivate::checkLogFiles() {
         delete logOut;
         delete logFile;
 
-        QString logPath = logDir.absoluteFilePath("today.log"); // 日志的路径
-        QString newLogPath = logDir.absoluteFilePath(logFileCreatedDate.toString("yyyy-MM-dd.log"));
+        QString logPath = logDir.absoluteFilePath(QCoreApplication::applicationName() + ".log"); // 日志的路径
+        QString newLogPath = logDir.absoluteFilePath(QCoreApplication::applicationName() + "_"
+                                                     + logFileCreatedDate.toString("yyyy-MM-dd.log"));
         QFile::copy(logPath, newLogPath); // Bug: 按理说 rename 会更合适，但是 rename 时最后一个文件总是显示不出来，需要 killall Finder 后才出现
         QFile::remove(logPath); // 删除重新创建，改变创建时间
 
@@ -140,7 +142,7 @@ void LogHandlerPrivate::autoDeleteLog()
     QDateTime dateTime1 = now.addDays(-30);
     QDateTime dateTime2;
 
-    QString logPath = logDir.absoluteFilePath("today.log"); // 日志的路径
+    QString logPath = logDir.absoluteFilePath(QCoreApplication::applicationName() + ".log"); // 日志的路径
     QDir dir(logPath);
     QFileInfoList fileList = dir.entryInfoList();
     foreach (QFileInfo f, fileList ) {
@@ -148,7 +150,7 @@ void LogHandlerPrivate::autoDeleteLog()
         if (f.baseName() == "")
             continue;
 
-        dateTime2 = QDateTime::fromString(f.baseName(), "yyyy-MM-dd");
+        dateTime2 = f.lastModified();
         if (dateTime2 < dateTime1) { // 只要日志时间小于前30天的时间就删除
             dir.remove(f.absoluteFilePath());
         }
@@ -210,6 +212,11 @@ void LogHandlerPrivate::messageHandler(QtMsgType type, const QMessageLogContext 
  ***********************************************************************************************************/
 LogHandler::LogHandler(QObject *parent) : d_ptr(new LogHandlerPrivate(this))
 {
+}
+
+LogHandler::~LogHandler()
+{
+    uninstallMessageHandler();
 }
 
 // 给Qt安装消息处理函数
