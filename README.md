@@ -63,10 +63,17 @@ cd latex
 ```bash
 make -j
 ```
-9. More
+
+9. 简化上述流程，使用脚本一键在工程顶级目录下生成pdf接口文档
+```bash
+./doxygen_pdf.sh
+```
+
+10. More
 + [ubuntu 下使用doxygen为C/C++工程生成pdf版的API](https://blog.csdn.net/jinking01/article/details/102809414)
 + [linux下的doxygen的使用](https://blog.csdn.net/yunjingguang/article/details/28266115)
 + [Doxygen快速入门](https://zhuanlan.zhihu.com/p/100223113)
+
 ## Code Coverage Test
 
 1. 安装环境
