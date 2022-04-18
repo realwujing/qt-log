@@ -11,7 +11,7 @@
 #include <QTextStream>
 #include <QTextCodec>
 
-const int g_logLimitSize = 10; /**< 日志文件大小限制，单位 MB */
+const int g_logLimitSize = 10; ///< 日志文件大小限制，单位 MB */
 
 class LogHandler;
 /**
@@ -64,16 +64,16 @@ private:
     static void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg);
 
 public:
-    LogHandler * const q_ptr;   /**< D指针 */
-    Q_DECLARE_PUBLIC(LogHandler);   /**< 声明LogHandler类 */
+    LogHandler * const q_ptr;   ///< D指针
+    Q_DECLARE_PUBLIC(LogHandler);   ///< 声明LogHandler类
 
 private:
-    QDir   logDir;              /**< 日志文件夹 */
-    QTimer renameLogFileTimer;  /**< 重命名日志文件使用的定时器 */
-    QTimer flushLogFileTimer;   /**< 刷新输出到日志文件的定时器 */
-    QDateTime  logFileCreatedDateTime;  /* 日志文件创建的时间 */
+    QDir   logDir;              ///< 日志文件夹
+    QTimer renameLogFileTimer;  ///< 重命名日志文件使用的定时器
+    QTimer flushLogFileTimer;   ///< 刷新输出到日志文件的定时器
+    QDateTime  logFileCreatedDateTime;  ///< 日志文件创建的时间 
 
-    static QFile *logFile;      /**< 日志文件 */
-    static QTextStream *logOut; /**< 输出日志的 QTextStream，使用静态对象就是为了减少函数调用的开销 */
-    static QMutex logMutex;     /**< 同步使用的 mutex */
+    static QFile *logFile;      ///< 日志文件
+    static QTextStream *logOut; ///< 输出日志的 QTextStream，使用静态对象就是为了减少函数调用的开销
+    static QMutex logMutex;     ///< 同步使用的 mutex
 };
